@@ -19,4 +19,4 @@ Este projeto é um protótipo funcional desenvolvido para o **Projeto Integrador
 
 1. Clone o repositório:
    ```bash
-   git clone [https://github.com/SEU_USUARIO/monitoramento-urbano.git](https://github.com/SEU_USUARIO/monitoramento-urbano.git)
+   git clone [git clone https://github.com/leandromouraufms/monitoramento-urbano.git](https://github.com/SEU_USUARIO/monitoramento-urbano.git)
