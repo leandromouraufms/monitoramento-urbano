@@ -1,35 +1,33 @@
 -- =============================================================
 -- SISMONI - Sistema de Monitoramento Urbano (Módulo 3)
--- Localização: São Conrado, Campo Grande/MS
+-- Localização: São Conrado, Campo Grande/MS - Versão SQLite
 -- =============================================================
 
--- Parte 1: MODELAGEM (Criação do Banco e Tabelas)
-CREATE DATABASE IF NOT EXISTS sismoni_db;
-USE sismoni_db;
+-- Parte 1: MODELAGEM (Criação das Tabelas)
 
--- Tabela de Usuários (Fiscais e Administradores)
-CREATE TABLE usuarios (
-    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+-- Tabela de Usuários
+CREATE TABLE IF NOT EXISTS usuarios (
+    id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(100) NOT NULL,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     senha VARCHAR(255) NOT NULL,
-    perfil ENUM('Cidadao', 'Fiscal', 'Adm') DEFAULT 'Cidadao'
+    perfil VARCHAR(50) DEFAULT 'Cidadao'
 );
 
--- Tabela de Denúncias (Focos detectados)
-CREATE TABLE denuncias (
-    id_denuncia INT PRIMARY KEY AUTO_INCREMENT,
+-- Tabela de Denúncias
+CREATE TABLE IF NOT EXISTS denuncias (
+    id_denuncia INTEGER PRIMARY KEY AUTOINCREMENT,
     tipo_foco VARCHAR(50) NOT NULL,
     descricao TEXT,
     endereco_completo VARCHAR(255) NOT NULL,
     data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('Pendente', 'Em Analise', 'Encaminhado Prefeitura', 'Resolvido') DEFAULT 'Pendente'
+    status VARCHAR(50) DEFAULT 'Pendente'
 );
 
--- Tabela de Protocolos para a Prefeitura (Integração Governamental)
-CREATE TABLE protocolos_prefeitura (
-    id_protocolo INT PRIMARY KEY AUTO_INCREMENT,
-    id_denuncia INT,
+-- Tabela de Protocolos para a Prefeitura
+CREATE TABLE IF NOT EXISTS protocolos_prefeitura (
+    id_protocolo INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_denuncia INTEGER,
     numero_oficio VARCHAR(20) UNIQUE,
     data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     secretaria_destino VARCHAR(100) DEFAULT 'Secretaria de Obras e Urbanismo',
@@ -37,7 +35,7 @@ CREATE TABLE protocolos_prefeitura (
 );
 
 -- -------------------------------------------------------------
--- Parte 2: MANIPULAÇÃO DE DADOS (DML)
+-- Parte 2: MANIPULAÇÃO DE DADOS (DML) - EXECUÇÃO DOS TESTES
 -- -------------------------------------------------------------
 
 -- 1. INSERÇÃO: Simulando o registro de um foco no São Conrado
@@ -55,3 +53,6 @@ WHERE id_denuncia = 1;
 -- 4. REGISTRO DE PROTOCOLO: Vinculando a denúncia ao envio oficial
 INSERT INTO protocolos_prefeitura (id_denuncia, numero_oficio)
 VALUES (1, 'OF-2024/SC-001');
+
+-- 5. CONSULTA FINAL: Verificando o resultado da atualização
+SELECT * FROM denuncias;
