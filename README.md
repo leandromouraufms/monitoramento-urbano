@@ -35,7 +35,7 @@ O **SISMONI** é um protótipo funcional desenvolvido para a disciplina de **Pro
 ---
 
 ## ⚖️ Governança e Segurança
-O tratamento das informações coletadas segue rigorosamente os preceitos da **Lei Geral de Proteção de Dados (LGPD - Brasil, 2018)**, assegurando a privacidade dos usuários e a integridade do monitoramento socioambiental.
+O tratamento das informações coletadas segue rigorosamente os preceitos da [Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm), assegurando a privacidade dos usuários e a integridade do monitoramento socioambiental.
 
 ---
 
