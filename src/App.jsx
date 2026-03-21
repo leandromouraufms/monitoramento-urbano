@@ -225,7 +225,7 @@ function App() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => alert('Notificação enviada ao proprietário.')} className="text-[9px] bg-blue-50 text-blue-700 px-4 py-2 rounded-lg font-black uppercase hover:bg-blue-100">Notificar</button>
+                        <button onClick={() => alert('Dados encaminhados à Prefeitura para notificação.')} className="text-[9px] bg-blue-50 text-blue-700 px-4 py-2 rounded-lg font-black uppercase hover:bg-blue-100">Notificar</button>
                         <button onClick={() => setVistoriaAberta(item)} className="text-[9px] bg-green-500 text-white px-4 py-2 rounded-lg font-black uppercase hover:bg-green-600 shadow-md">Vistoriar</button>
                       </div>
                     </div>

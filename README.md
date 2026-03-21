@@ -1,22 +1,31 @@
-# SISMONI - Sistema de Monitoramento Urbano (São Conrado - Campo Grande-MS, UFMS)
+# SISMONI - Sistema de Monitoramento Urbano (São Conrado - Campo Grande/MS)
 
-Este projeto consiste em um protótipo funcional desenvolvido para a disciplina de **Projeto Integrador II**. O sistema foca na fiscalização de terrenos baldios e no controle de riscos socioambientais (como focos de Dengue) no bairro São Conrado, em Campo Grande/MS.
+O **SISMONI** é um protótipo funcional de alta fidelidade desenvolvido para a disciplina de **Projeto Integrador II (UFMS)**. O sistema foca na fiscalização inteligente de terrenos baldios e no controle de riscos socioambientais, como focos de Dengue e descarte irregular de resíduos, especificamente no bairro São Conrado.
 
-## 🚀 Funcionalidades Implementadas
+## 🚀 Evolução do Projeto (Módulo 3)
 
-* **Navegação Dinâmica (SPA):** A interface utiliza estados do React para que se alternem as telas sem o carregamento da página, otimizando a performance.
-* **Acesso Dual:** Apresentam-se fluxos distintos para Cidadãos (denúncia anônima com envio de fotos) e Fiscais (gestão técnica).
-* **Autenticação Integrada:** Simula-se o cadastro de agentes públicos através do portal **gov.br**, garantindo a identidade digital do fiscal.
-* **Painel de Monitoramento:** Dashboard administrativo que exibe indicadores de focos críticos e situações em vistoria em tempo real.
-* **Laudo de Vistoria Técnica:** Interface exclusiva para que agentes registrem pareceres, altura de mato e riscos sanitários diretamente do campo.
-* **Design Responsivo:** A aplicação se adapta a dispositivos móveis e desktops, seguindo a filosofia *Mobile-First*.
+Nesta etapa, o projeto evoluiu de uma interface estática para uma aplicação com **modelagem de dados estruturada (SQL)** e fluxo de governança pública.
 
-## 🛠️ Tecnologias Utilizadas
+### 🏛️ Estrutura de Notificação e Conformidade
+Para garantir a segurança jurídica e a proteção de dados (LGPD), o SISMONI adota o seguinte fluxo:
+* **Ponte de Inteligência:** O sistema gera protocolos automáticos com coordenadas e provas visuais do foco crítico.
+* **Encaminhamento Oficial:** Os dados são direcionados à base municipal, permitindo que a Prefeitura cruze as informações com o Cadastro Imobiliário (IPTU).
+* **Ação In Loco:** A autoridade pública procede à notificação oficial do proprietário, garantindo a validade legal do processo.
 
-* **React.js** - Framework Frontend para construção de interfaces componenteizadas.
-* **Vite** - Ferramenta de build de alta performance.
-* **Tailwind CSS** - Framework de estilização utilitária para design responsivo.
-* **Hooks (useState):** Para que se gerencie o estado global da aplicação e a navegação.
+## 🛠️ Funcionalidades Implementadas
+
+* **Navegação Dinâmica (SPA):** Interface em React com transições fluidas e otimização de performance.
+* **Acesso Dual (Cidadão/Fiscal):** Fluxos distintos para denúncias anônimas e gestão técnica de vistorias.
+* **Persistência de Dados (SQL):** Modelagem de tabelas para Usuários, Denúncias e Protocolos de Exportação.
+* **Painel de Monitoramento:** Dashboard administrativo com indicadores de focos críticos em tempo real.
+* **Design Responsivo:** Aplicação totalmente adaptada para dispositivos móveis (*Mobile-First*).
+
+## 💻 Tecnologias Utilizadas
+
+* **React.js / Vite** - Framework e ferramenta de build de alta performance.
+* **Tailwind CSS** - Estilização moderna e responsiva.
+* **SQL (MySQL/PostgreSQL)** - Modelagem do esquema de banco de dados relacional.
+* **Git/GitHub** - Controle de versão e gerenciamento do ciclo de vida do software.
 
 ## 📦 Como executar o projeto localmente
 
