@@ -1,3 +1,4 @@
+// Versão 1.0 - Base de Interface (Módulo 2)
 import React, { useState } from 'react'
 
 function App() {
