@@ -14,6 +14,14 @@ CREATE TABLE IF NOT EXISTS usuarios (
     perfil VARCHAR(50) DEFAULT 'Cidadao'
 );
 
+-- Inserção do Usuário Padrão para Denúncias Anônimas
+INSERT OR IGNORE INTO usuarios (id_usuario, nome, cpf, senha, perfil) 
+VALUES (999, 'Cidadao Anonimo', '000.000.000-00', 'nao_se_aplica', 'Cidadao');
+
+-- Inserção do Usuário Fiscal para Testes de Acesso
+INSERT OR IGNORE INTO usuarios (nome, cpf, senha, perfil) 
+VALUES ('Leandro Fiscal', '123.456.789-00', '1234', 'Fiscal');
+
 -- Tabela de Denúncias
 CREATE TABLE IF NOT EXISTS denuncias (
     id_denuncia INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,21 +46,31 @@ CREATE TABLE IF NOT EXISTS protocolos_prefeitura (
 -- Parte 2: MANIPULAÇÃO DE DADOS (DML) - EXECUÇÃO DOS TESTES
 -- -------------------------------------------------------------
 
--- 1. INSERÇÃO: Simulando o registro de um foco no São Conrado
+-- 1. INSERÇÃO: O sistema gera o ID automaticamente (Auto-incremento)
 INSERT INTO denuncias (tipo_foco, descricao, endereco_completo, status) 
 VALUES ('Mato Alto / Água Parada', 'Terreno baldio com descarte de pneus', 'Rua Polônia, 450, São Conrado', 'Pendente');
 
--- 2. CONSULTA: Localizando denúncias para triagem do fiscal
-SELECT * FROM denuncias WHERE status = 'Pendente';
+INSERT INTO denuncias (tipo_foco, descricao, endereco_completo, status) 
+VALUES ('Lixo Acumulado', 'Descarte irregular de móveis e entulho', 'Rua General Ângelo, 120, São Conrado', 'Pendente');
 
--- 3. ATUALIZAÇÃO: Alterando status após o envio oficial à prefeitura
+-- 2. CONSULTA: Verificando as denúncias que acabaram de entrar
+SELECT * FROM denuncias;
+
+-- 3. ATUALIZAÇÃO: Vamos atualizar SEMPRE a última denúncia inserida
+-- (Isso garante que o comando funcione mesmo que os IDs subam)
 UPDATE denuncias 
 SET status = 'Encaminhado Prefeitura' 
-WHERE id_denuncia = 1;
+WHERE id_denuncia = (SELECT MAX(id_denuncia) FROM denuncias);
 
--- 4. REGISTRO DE PROTOCOLO: Vinculando a denúncia ao envio oficial
+-- 4. REGISTRO DE PROTOCOLO: Vinculando ao último ID gerado
 INSERT INTO protocolos_prefeitura (id_denuncia, numero_oficio)
-VALUES (1, 'OF-2024/SC-001');
+VALUES ((SELECT MAX(id_denuncia) FROM denuncias), 'OF-2024/SC-' || (SELECT MAX(id_denuncia) FROM denuncias));
 
--- 5. CONSULTA FINAL: Verificando o resultado da atualização
+-- 5. REMOÇÃO: Apenas para demonstrar que o comando funciona
+-- Deletamos um ID específico se ele existir (ex: o 2)
+DELETE FROM denuncias WHERE id_denuncia = 2;
+
+-- 6. CONSULTA FINAL: Mostrando o resultado de tudo
+SELECT * FROM usuarios;
 SELECT * FROM denuncias;
+SELECT * FROM protocolos_prefeitura;
