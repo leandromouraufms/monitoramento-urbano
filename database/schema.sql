@@ -3,6 +3,13 @@
 -- Localização: São Conrado, Campo Grande/MS - Versão SQLite
 -- =============================================================
 
+-- Comandos de Limpeza (caso necessite limpar o sismoni.db para testes)
+-- DROP TABLE IF EXISTS protocolos_prefeitura; 
+-- DROP TABLE IF EXISTS denuncias;
+-- DROP TABLE IF EXISTS usuarios;
+-- DELETE FROM sqlite_sequence WHERE name='denuncias';
+
+
 -- Parte 1: MODELAGEM (Criação das Tabelas)
 
 -- Tabela de Usuários
@@ -28,6 +35,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
     tipo_foco VARCHAR(50) NOT NULL,
     descricao TEXT,
     endereco_completo VARCHAR(255) NOT NULL,
+    foto_anexo VARCHAR(255), -- Armazena o nome ou caminho do arquivo anexo
     data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) DEFAULT 'Pendente'
 );
@@ -47,28 +55,27 @@ CREATE TABLE IF NOT EXISTS protocolos_prefeitura (
 -- -------------------------------------------------------------
 
 -- 1. INSERÇÃO: O sistema gera o ID automaticamente (Auto-incremento)
-INSERT INTO denuncias (tipo_foco, descricao, endereco_completo, status) 
-VALUES ('Mato Alto / Água Parada', 'Terreno baldio com descarte de pneus', 'Rua Polônia, 450, São Conrado', 'Pendente');
+INSERT INTO denuncias (tipo_foco, descricao, endereco_completo, foto_anexo, status) 
+VALUES ('Mato Alto / Água Parada', 'Terreno baldio com descarte de pneus', 'Rua Polônia, 450, São Conrado', 'terreno_baldio.jpg', 'Pendente');
 
-INSERT INTO denuncias (tipo_foco, descricao, endereco_completo, status) 
-VALUES ('Lixo Acumulado', 'Descarte irregular de móveis e entulho', 'Rua General Ângelo, 120, São Conrado', 'Pendente');
+INSERT INTO denuncias (tipo_foco, descricao, endereco_completo, foto_anexo, status) 
+VALUES ('Lixo Acumulado', 'Descarte irregular de móveis e entulho', 'Rua General Ângelo, 120, São Conrado', 'entulho_rua.png', 'Pendente');
 
 -- 2. CONSULTA: Verificando as denúncias que acabaram de entrar
 SELECT * FROM denuncias;
 
--- 3. ATUALIZAÇÃO: Vamos atualizar SEMPRE a última denúncia inserida
--- (Isso garante que o comando funcione mesmo que os IDs subam)
+-- 3. ATUALIZAÇÃO: Mudando o status para refletir a geração do documento oficial
 UPDATE denuncias 
-SET status = 'Encaminhado Prefeitura' 
+SET status = 'Vistoriado - Gerado Ofício' 
 WHERE id_denuncia = (SELECT MAX(id_denuncia) FROM denuncias);
 
 -- 4. REGISTRO DE PROTOCOLO: Vinculando ao último ID gerado
 INSERT INTO protocolos_prefeitura (id_denuncia, numero_oficio)
-VALUES ((SELECT MAX(id_denuncia) FROM denuncias), 'OF-2024/SC-' || (SELECT MAX(id_denuncia) FROM denuncias));
+VALUES ((SELECT MAX(id_denuncia) FROM denuncias), 'OF-2026/SC-' || (SELECT MAX(id_denuncia) FROM denuncias));
 
--- 5. REMOÇÃO: Apenas para demonstrar que o comando funciona
--- Deletamos um ID específico se ele existir (ex: o 2)
-DELETE FROM denuncias WHERE id_denuncia = 2;
+-- 5. REMOÇÃO: (Preservado conforme original para seus testes)
+-- Quando for testar a remoção, selecione a linha abaixo, ativá-la e rodar apenas ela:
+-- DELETE FROM denuncias WHERE id_denuncia = 5;
 
 -- 6. CONSULTA FINAL: Mostrando o resultado de tudo
 SELECT * FROM usuarios;
