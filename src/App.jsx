@@ -1,7 +1,7 @@
 // Versão 1.1 - SISMONI - SISTEMA DE MONITORAMENTO URBANO - BAIRRO SÃO CONRADO - CAMPO GRANDE-MS
 // INTEGRADO COM SCHEMA SQLITE - Adequações para viabilizar futura base de dados.
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 function App() {
   const [telaAtual, setTelaAtual] = useState('portal') 
@@ -14,61 +14,261 @@ function App() {
   const [formRua, setFormRua] = useState('')
   const [formProblema, setFormProblema] = useState('Mato Alto')
   const [formDescricao, setFormDescricao] = useState('')
-  
-  // --- NOVA FUNÇÃO DE LIMPEZA (Adicionada conforme solicitado) ---
+
+  // PARA O LOGIN
+  const [loginCpf, setLoginCpf] = useState('')
+  const [loginSenha, setLoginSenha] = useState('')
+
+  // para que seja recebido o nome da foto constante da denúncia e login cpf e senha 
+  const [nomeFoto, setNomeFoto] = useState(''); 
+
+// FUNÇÃO DE MÁSCARA AUTOMÁTICA: 
+  // Garante que o usuário digite apenas números e formata o CPF no padrão (000.000.000-00)
+  // enquanto ele digita, impedindo erros de cadastro no banco de dados.
+  const aplicarMascaraCPF = (valor) => {
+    return valor
+      .replace(/\D/g, '') // Remove tudo o que não é número
+      .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto após os 3 primeiros números
+      .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto após os 6 primeiros números
+      .replace(/(\d{3})(\d{1,2})/, '$1-$2') // Coloca traço antes dos últimos 2 números
+      .replace(/(-\d{2})\d+?$/, '$1'); // Impede que digite mais de 11 números
+  };
+
+  // NOVA FUNÇÃO DE LIMPEZA
   const limparFormulario = () => {
     setFormRua('')
     setFormDescricao('')
     setFormProblema('Mato Alto')
+    setNomeFoto('')
+    setLoginCpf("");
+    setLoginSenha("");
   }
 
   // DADOS DO USUÁRIO (Sincronizados com o Schema: id_usuario, nome, cpf, senha, perfil)
-  const [usuarioLogado, setUsuarioLogado] = useState({ nome: 'Leandro Fiscal', cpf: '123.456.789-00', perfil: 'Fiscal' })
+  // O usuário começa como null (ninguém logado ainda)
+  const [usuarioLogado, setUsuarioLogado] = useState(null);
 
-  // BANCO DE DADOS SIMULADO (Com campos de Data e Mídia conforme Schema SQL)
-  const [denuncias, setDenuncias] = useState([
-    { id: 1, rua: "Rua Gen. Alberto C. Mendonça", problema: "Mato Alto", descricao: "O mato está invadindo a calçada e dificultando a passagem.", status: "Pendente", protocolo: "2026-SIS-001", dataRegistro: "15/03/2026", dataOficio: null, tecnico: "", temFoto: true },
-    { id: 2, rua: "Rua Cap. Airton P. Rebouças", problema: "Lixo Acumulado", descricao: "Descarte irregular de móveis e entulho na calçada.", status: "Pendente", protocolo: "2026-SIS-002", dataRegistro: "16/03/2026", dataOficio: null, tecnico: "", temFoto: false },
-    { id: 3, rua: "Rua Jandaia do Sul", problema: "Foco de Dengue", descricao: "Piscina abandonada com água parada.", status: "Vistoriado", protocolo: "2026-SIS-003", dataRegistro: "10/03/2026", dataOficio: "20/03/2026", tecnico: "Leandro Fiscal", parecerTecnico: "Local autuado. Proprietário notificado para limpeza imediata.", temFoto: true },
-  ])
+
+  // BANCO DE DADOS REAL (Inicia vazio e carrega do SQLite)
+  const [denuncias, setDenuncias] = useState([]);
+
+  // FUNÇÃO PARA BUSCAR DADOS DO SERVIDOR (AJUSTADA PARA O OFÍCIO)
+  const carregarDenuncias = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/denuncias');
+      const dados = await response.json();
+      
+      const formatados = dados.map(d => {
+        const temParecer = d.descricao && d.descricao.includes(' | PARECER: ');
+        const partes = temParecer ? d.descricao.split(' | PARECER: ') : [d.descricao, ''];
+        
+        // --- NOVA LÓGICA DE EXTRAÇÃO DO NOME ---
+        // Se o técnico estiver vazio no banco, tentamos pegar o nome que está no texto do parecer
+        let nomeExtraido = d.tecnico;
+        if (!nomeExtraido && partes[1].includes('Vistoriado por:')) {
+          nomeExtraido = partes[1].split('Vistoriado por: ')[1].replace(')', '');
+        }
+        // ---------------------------------------
+
+        return {
+          id: d.id_denuncia,
+          rua: d.endereco_completo,
+          problema: d.tipo_foco,
+          descricao: partes[0],
+          parecerTecnico: partes[1],
+          status: d.status,
+          protocolo: `2026-SIS-${d.id_denuncia}`,
+          dataRegistro: new Date(d.data_registro).toLocaleDateString('pt-BR'),
+          foto_anexo: d.foto_anexo,
+          dataOficio: d.status === 'Vistoriado' ? new Date(d.data_registro).toLocaleDateString('pt-BR') : null,
+          
+          // Agora o técnico recebe o nome que extraímos do próprio texto do parecer
+          tecnico: d.status === 'Vistoriado' ? (nomeExtraido || "Técnico SISMONI") : ""
+        };
+      });
+      
+      setDenuncias(formatados);
+    } catch (error) {
+      console.error("Erro ao carregar banco:", error);
+    }
+  };
+
+  // CARREGAR AUTOMATICAMENTE AO ABRIR O APP
+  useEffect(() => {
+    carregarDenuncias();
+  }, []);
 
   // --- LÓGICA DE NEGÓCIO (CRUD) ---
-  const finalizarVistoria = (id, parecer) => {
+  const finalizarVistoria = async (id, parecer) => {
     if(!parecer) return alert("Erro: O parecer técnico é obrigatório!")
-    const novasDenuncias = denuncias.map(d => {
-      if (d.id === id) return { 
-        ...d, 
-        status: "Vistoriado", 
-        dataOficio: new Date().toLocaleDateString('pt-BR'),
-        tecnico: usuarioLogado.nome,
-        parecerTecnico: parecer 
+    
+    const dataHoje = new Date().toLocaleDateString('pt-BR'); 
+
+    try {
+      const response = await fetch(`http://localhost:5000/denuncias/vistoriar/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // AVISO: Alterei a linha abaixo para incluir seu nome no parecer que vai para o SQLite
+        body: JSON.stringify({ 
+          parecer: `${parecer} (Vistoriado por: ${usuarioLogado.nome})` 
+        })
+      });
+
+      if (response.ok) {
+        const novasDenuncias = denuncias.map(d => {
+          if (d.id === id) return { 
+            ...d, 
+            status: "Vistoriado", 
+            dataOficio: dataHoje,
+            tecnico: usuarioLogado.nome,
+            parecerTecnico: parecer 
+          }
+          return d
+        })
+        setDenuncias(novasDenuncias)
+        setVistoriaAberta(null)
+        alert("Vistoria salva com sucesso no SQLite!");
       }
-      return d
-    })
-    setDenuncias(novasDenuncias)
-    setVistoriaAberta(null)
+    } catch (error) {
+      alert("Erro ao salvar vistoria no servidor.");
+    }
   }
 
-  const gerarProtocoloCidadao = () => {
+  const gerarProtocoloCidadao = async () => {
+    // 1. Validações básicas (mantidas da sua versão)
     if(!formRua && !formDescricao) return alert("Erro: O endereço e a descrição são obrigatórios!")
     if(!formRua) return alert("Erro: Preencha o endereço!")
     if(!formDescricao) return alert("Erro: Descreva o problema encontrado!")
 
-    const novo = {
-      id: Date.now(),
-      rua: formRua,
-      problema: formProblema,
-      descricao: formDescricao,
-      status: "Pendente",
-      protocolo: `2026-WEB-${Math.floor(Math.random() * 900)}`,
-      dataRegistro: new Date().toLocaleDateString('pt-BR'),
-      dataOficio: null,
-      temFoto: true
+
+    // 2. Criamos o objeto fiel ao Schema.sql (endereco_completo)
+    const novaDenuncia = {
+  tipo_foco: formProblema,
+  endereco_completo: formRua,
+  descricao: formDescricao,
+  status: "Pendente",
+  foto_anexo: nomeFoto // <-- Aqui vai o nome do arquivo (ex: "foto1.jpg")
+};
+
+    try {
+      // 3. Enviando para o Servidor Node.js (Porta 5000)
+      const response = await fetch('http://localhost:5000/denuncias', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(novaDenuncia),
+      });
+
+      const resultado = await response.json();
+
+      if (response.ok) {
+        // 4. Se o servidor salvou com sucesso, atualizamos a tela do React
+        const novo = {
+          id: resultado.id, // ID que veio do SQLite
+          rua: formRua,
+          problema: formProblema,
+          descricao: formDescricao,
+          status: "Pendente",
+          protocolo: `2026-WEB-${resultado.id}`, // Usando o ID real como protocolo
+          dataRegistro: new Date().toLocaleDateString('pt-BR'),
+          dataOficio: null,
+          foto_anexo: nomeFoto // para que seja devolvido o nome da foto até que a base possa gravar o arquivo
+        };
+
+        setDenuncias([novo, ...denuncias]);
+        alert(`Sucesso! Denúncia gravada no Banco de Dados SQLite. Protocolo: ${novo.protocolo}`);
+        limparFormulario();
+      } else {
+        alert("Erro ao gravar no banco: " + resultado.error);
+      }
+    } catch (error) {
+      console.error("Erro na conexão:", error);
+      alert("O servidor está desligado! Ligue o servidor com 'node server.cjs' antes de enviar.");
     }
-    setDenuncias([novo, ...denuncias])
-    alert(`Sucesso! Protocolo ${novo.protocolo} gerado. Aguarde a fiscalização no Bairro São Conrado.`)
-    limparFormulario() // Limpa após o sucesso
   }
+
+// >>> NOVA FUNÇÃO: VALIDAÇÃO DE LOGIN NO SQLITE <<<
+// >>> FUNÇÃO DE LOGIN COM BLOQUEIO DE 11 DÍGITOS <<<
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    // BLOQUEIO: Garante que o usuário digitou os 11 números antes de tentar logar
+    const cpfLimpo = loginCpf.replace(/\D/g, ''); // Tira pontos e traços
+    if (cpfLimpo.length !== 11) {
+      return alert("Erro: O CPF deve conter exatamente 11 números!");
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Enviamos o CPF limpo (só números) para o banco SQLite
+        body: JSON.stringify({ cpf: cpfLimpo, senha: loginSenha })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUsuarioLogado(data.user); 
+        setTelaAtual('sistema');
+        setModoCidadao(false);
+        setLoginCpf(''); 
+        setLoginSenha(''); 
+      } else {
+        alert(data.message || "Acesso Negado: CPF ou Senha incorretos.");
+      }
+    } catch (error) {
+      console.error("Erro no login:", error);
+      alert("Erro crítico: O servidor Node.js está desligado.");
+    }
+  };
+  // >>> FIM DA FUNÇÃO DE LOGIN <<<
+
+  // NOVA FUNÇÃO: PARA CADASTRAR AGENTES NO BANCO
+  // NOVA FUNÇÃO: PARA CADASTRAR AGENTES COM VALIDAÇÃO DE CPF
+  const handleCadastro = async (e) => {
+    e.preventDefault();
+    
+    // BLOQUEIO: Limpa os pontos/traços e impede o cadastro se não tiver 11 números
+    const cpfLimpo = loginCpf.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) {
+      return alert("Erro: Para cadastrar, o CPF precisa ter exatamente 11 dígitos!");
+    }
+
+    // Capturamos os valores diretamente dos inputs
+    const nome = e.target[0].value; 
+    const senha = loginSenha;
+
+    try {
+      const response = await fetch('http://localhost:5000/usuarios', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json' 
+        },
+        body: JSON.stringify({ 
+          nome: nome, 
+          cpf: cpfLimpo, // Enviamos o CPF limpo (só números) para o SQLite
+          senha: senha, 
+          perfil: 'Fiscal' 
+        })
+      });
+
+      if (response.ok) {
+        alert("Agente cadastrado com sucesso! Agora faça login.");
+        setLoginCpf("");   
+        setLoginSenha(""); 
+        setTelaAtual('login'); 
+      } else {
+        const data = await response.json();
+        alert("Erro no servidor: " + (data.error || "CPF já cadastrado."));
+      }
+    } catch (error) {
+      console.error("Erro técnico:", error);
+      alert("Servidor offline! Verifique se o server.cjs está aberto.");
+    }
+  };
 
   // --- COMPONENTE: OFÍCIO (Formatado para Impressão) ---
   if (visualizarOficio) {
@@ -85,9 +285,13 @@ function App() {
             <p className="text-xs font-sans mt-2 tracking-widest text-slate-400 italic">Bairro São Conrado - CG/MS</p>
           </div>
           <div className="mb-10 text-sm font-sans space-y-1">
-            <p className="text-right mb-6">Campo Grande-MS, {visualizarOficio.dataOficio}</p>
+            <p className="text-right mb-6">
+              Campo Grande-MS, {visualizarOficio.dataOficio || new Date().toLocaleDateString('pt-BR')}
+            </p>
             <p><strong>Protocolo:</strong> {visualizarOficio.protocolo}</p>
-            <p><strong>Técnico Responsável:</strong> {visualizarOficio.tecnico}</p>
+            
+            {/* LINHA ATUALIZADA: Tenta o nome do banco, se não houver, pega o do usuário logado */}
+            <p><strong>Técnico Responsável:</strong> {visualizarOficio.tecnico || usuarioLogado?.nome || "Fiscal de Plantão"}</p>
           </div>
           <div className="text-sm leading-loose text-justify space-y-6">
             <p>Encaminhamos para as devidas providências o laudo de vistoria realizado no endereço: <strong>{visualizarOficio.rua.toUpperCase()}</strong>.</p>
@@ -102,7 +306,7 @@ function App() {
     )
   }
 
-  // --- TELAS INICIAIS ---
+ // --- TELAS INICIAIS ---
   if (telaAtual === 'portal') {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
@@ -124,13 +328,50 @@ function App() {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
         <div className="bg-white p-12 rounded-[3rem] shadow-2xl max-w-sm w-full border-b-[12px] border-blue-900 animate-slideUp">
-          <h2 className="text-3xl font-black text-blue-900 mb-10 uppercase italic tracking-tighter">{telaAtual === 'login' ? 'Login Agente' : 'Novo Agente'}</h2>
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setTelaAtual('sistema'); setModoCidadao(false); }}>
-            {telaAtual === 'cadastro' && <input type="text" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold shadow-inner" placeholder="Nome Completo" />}
-            <input type="text" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold shadow-inner" placeholder="CPF" />
-            <input type="password" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold shadow-inner" placeholder="Senha" />
-            <button type="submit" className="w-full bg-blue-900 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">{telaAtual === 'login' ? 'Entrar' : 'Salvar e Acessar'}</button>
-            <button onClick={() => { limparFormulario(); setTelaAtual('portal'); }} className="w-full text-slate-300 font-black text-[10px] uppercase mt-2">Voltar</button>
+          <h2 className="text-3xl font-black text-blue-900 mb-10 uppercase italic tracking-tighter">
+            {telaAtual === 'login' ? 'Login Agente' : 'Novo Agente'}
+          </h2>
+          
+          <form className="space-y-6" onSubmit={telaAtual === 'login' ? handleLogin : handleCadastro}>
+            
+            {telaAtual === 'cadastro' && (
+              <input type="text" required className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold shadow-inner" placeholder="Nome Completo" />
+            )}
+
+            <input 
+              type="text" 
+              required 
+              value={loginCpf}
+              onChange={(e) => setLoginCpf(aplicarMascaraCPF(e.target.value))}
+              className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold shadow-inner" 
+              placeholder="CPF" 
+            />
+
+            <input 
+              type="password" 
+              required 
+              value={loginSenha}
+              onChange={(e) => setLoginSenha(e.target.value)}
+              className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold shadow-inner" 
+              placeholder="Senha" 
+            />
+
+            <button type="submit" className="w-full bg-blue-900 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">
+              {telaAtual === 'login' ? 'Entrar' : 'Salvar e Acessar'}
+            </button>
+
+            {/* Ajuste para alternar entre as telas limpando os campos */}
+            <div className="text-center mt-4">
+               {telaAtual === 'login' ? (
+                 <button type="button" onClick={() => { limparFormulario(); setTelaAtual('cadastro'); }} className="text-blue-900 font-bold text-[10px] uppercase underline">Cadastrar novo Agente</button>
+               ) : (
+                 <button type="button" onClick={() => { limparFormulario(); setTelaAtual('login'); }} className="text-blue-900 font-bold text-[10px] uppercase underline">Já tenho conta (Login)</button>
+               )}
+            </div>
+
+            <button type="button" onClick={() => { limparFormulario(); setTelaAtual('portal'); }} className="w-full text-slate-300 font-black text-[10px] uppercase mt-2">
+              Voltar
+            </button>
           </form>
         </div>
       </div>
@@ -207,9 +448,12 @@ function App() {
                       <p className="text-sm font-bold text-slate-500 italic bg-white p-5 rounded-2xl border border-slate-100 shadow-inner leading-relaxed">"{item.descricao}"</p>
                       <div className="flex gap-4 mt-4">
                         <span className="text-[10px] bg-blue-900 text-yellow-500 px-4 py-1.5 rounded-lg font-black uppercase shadow-sm">{item.problema}</span>
-                        {item.temFoto && (
-                          <button onClick={() => alert("Mídia Detectada: Arquivo verificado via Hash MD5.")} className="text-[10px] bg-purple-100 text-purple-700 px-4 py-1.5 rounded-lg font-black uppercase hover:bg-purple-200">Ver Foto Anexa</button>
-                        )}
+                        <button 
+                          onClick={() => alert(item.foto_anexo ? `Arquivo no Banco: ${item.foto_anexo}` : "Esta denúncia não possui foto anexa.")} 
+                          className={`text-[10px] px-4 py-1.5 rounded-lg font-black uppercase transition-all ${item.foto_anexo ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                        >
+                          {item.foto_anexo ? 'Ver Foto Anexa' : 'Sem Foto'}
+                        </button>
                         <span className="text-[10px] bg-slate-200 text-slate-600 px-4 py-1.5 rounded-lg font-black italic">PROT: {item.protocolo}</span>
                       </div>
                     </div>
@@ -219,7 +463,27 @@ function App() {
                       ) : (
                         <button onClick={() => setVisualizarOficio(item)} className="bg-blue-900 text-white px-8 py-5 rounded-2xl font-black uppercase text-[11px] shadow-xl border-b-8 border-yellow-500 hover:scale-105 transition-all">Ver Ofício</button>
                       )}
-                      <button onClick={() => { if(window.confirm("Apagar permanentemente do Banco de Dados?")) setDenuncias(denuncias.filter(d => d.id !== item.id)) }} className="bg-red-50 text-red-600 p-5 rounded-2xl hover:bg-red-100 transition-colors shadow-sm">🗑️</button>
+                      <button 
+                        onClick={async () => { 
+                          if(window.confirm("Apagar permanentemente do Banco de Dados SQLite?")) {
+                            try {
+                              const response = await fetch(`http://localhost:5000/denuncias/excluir/${item.id}`);
+                              if (response.ok) {
+                                // Usamos d.id para bater com o id que o React guardou
+                                setDenuncias(prev => prev.filter(d => d.id !== item.id));
+                                alert("Excluído com sucesso!");
+                              } else {
+                                alert("Erro ao excluir no servidor.");
+                              }
+                            } catch (error) {
+                              alert("Erro: O servidor está desligado.");
+                            }
+                          }
+                        }} 
+                        className="bg-red-50 text-red-600 p-5 rounded-2xl hover:bg-red-100 transition-colors shadow-sm"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -248,7 +512,15 @@ function App() {
                 </div>
                 <div>
                   <label className="text-[12px] font-black text-slate-500 uppercase block mb-3 ml-3 italic">Anexo (Opcional)</label>
-                  <input type="file" className="text-[10px] w-full p-5 bg-blue-50 border-2 border-dashed border-blue-200 rounded-[1.5rem] font-black" />
+                  <input 
+                    type="file" 
+                    onChange={(e) => {
+                      const arquivo = e.target.files[0];
+                      if (arquivo) setNomeFoto(arquivo.name);
+                    }}
+                    className="text-[10px] w-full p-5 bg-blue-50 border-2 border-dashed border-blue-200 rounded-[1.5rem] font-black" 
+                  />
+                  {nomeFoto && <p className="text-[10px] text-blue-600 mt-2 ml-2 font-bold italic">Arquivo selecionado: {nomeFoto}</p>}
                 </div>
               </div>
               <div>

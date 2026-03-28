@@ -1,5 +1,5 @@
 -- =============================================================
--- SISMONI - Sistema de Monitoramento Urbano (Módulo 3)
+-- SISMONI - Sistema de Monitoramento Urbano (Módulo 4 - v1.2)
 -- Localização: São Conrado, Campo Grande/MS - Versão SQLite
 -- =============================================================
 
