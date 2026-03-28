@@ -11,8 +11,11 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -27,5 +30,18 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.1"
-  }
+  },
+  "description": "![Status do Projeto](https://img.shields.io/badge/Status-Módulo_3_Concluído-green) ![React](https://img.shields.io/badge/Frontend-React.js-blue) ![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey)",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leandromouraufms/monitoramento-urbano.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/leandromouraufms/monitoramento-urbano/issues"
+  },
+  "homepage": "https://github.com/leandromouraufms/monitoramento-urbano#readme"
 }
