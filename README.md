@@ -20,17 +20,28 @@ Nesta etapa, o projeto deixou de ser apenas um protótipo visual e tornou-se uma
 
 ---
 
+## 📸 Visualização do Sistema (VV&T)
+
+| Tela de Acesso e Cadastro | Painel de Gestão de Denúncias |
+|---|---|
+| ![Login](./prints/login.png) | ![Dashboard](./prints/dashboard.png) |
+
+| Formulário de Vistoria | Ofício de Encaminhamento (Final) |
+|---|---|
+| ![Vistoria](./prints/denuncias.png) | ![Ofício](./prints/oficio.png) |
+
+---
+
 ## 📑 Evolução do Projeto
 
 ### **Módulo 4: Integração Full-Stack e Regras de Negócio (Finalizado)**
 * **Back-end Real:** Criação de rotas API (`/login`, `/usuarios`, `/denuncias`) para persistência de dados em tempo real.
 * **Validação de Inputs:** Uso de Regex para máscaras de CPF e prevenção de erros de entrada.
-* **Experiência do Usuário (UX):** Melhoria no fluxo de geração de Ofícios e feedback visual via alertas de validação.
+* **Garantia de Qualidade:** Aplicação de processos de Verificação, Validação e Teste (VV&T).
 
 ### **Módulo 3: Persistência e Inteligência de Dados**
 * **Modelagem Relacional:** Estruturação em **SQLite** com tabelas normalizadas em **3ª Forma Normal (3FN)**.
-* **Suporte a Evidências:** Armazenamento de caminhos de imagens (`foto_anexo`) para fiscalização.
-* **Integridade Referencial:** Uso de chaves primárias e estrangeiras para vincular usuários e denúncias.
+* **Suporte a Evidências:** Armazenamento de caminhos de imagens para fiscalização.
 
 ### **Módulo 2: Interface e Experiência do Usuário (Frontend)**
 * **Navegação Dinâmica (SPA):** Interface em React com estados para alternância de telas.
@@ -45,7 +56,7 @@ Nesta etapa, o projeto deixou de ser apenas um protótipo visual e tornou-se uma
 | **Frontend** | React.js, Vite, Tailwind CSS |
 | **Backend** | Node.js, Express.js, Cors |
 | **Banco de Dados** | SQLite 3, Linguagem SQL |
-| **Ferramentas** | VS Code, Git, GitHub, Postman |
+| **Ferramentas** | VS Code, Git, GitHub |
 
 ---
 
@@ -56,7 +67,7 @@ O tratamento das informações segue a **LGPD (Lei nº 13.709/2018)**. As senhas
 
 ## 📁 Estrutura de Arquivos Críticos
 - `/server.cjs`: Servidor Node.js que gerencia a API e o banco SQLite.
-- `/database.sqlite`: Arquivo de banco de dados com a persistência real.
+- `/schema.sql`: Script de criação das tabelas e usuários iniciais.
 - `/src/App.jsx`: Lógica principal do sistema e interface React.
 
 ---
@@ -65,4 +76,5 @@ O tratamento das informações segue a **LGPD (Lei nº 13.709/2018)**. As senhas
 
 1. **Clone o repositório:**
    ```bash
-   git clone https://github.com/leandromouraufms/monitoramento-urbano.git
+   git clone git clone https://github.com/leandromouraufms/monitoramento-urbano.git
+   cd monitoramento-urbano
