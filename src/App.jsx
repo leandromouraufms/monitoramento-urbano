@@ -1,4 +1,4 @@
-// Versão 1.1 - SISMONI - SISTEMA DE MONITORAMENTO URBANO - BAIRRO SÃO CONRADO - CAMPO GRANDE-MS
+// Versão 1.2 - SISMONI - SISTEMA DE MONITORAMENTO URBANO - BAIRRO SÃO CONRADO - CAMPO GRANDE-MS
 // INTEGRADO COM SCHEMA SQLITE - Adequações para viabilizar futura base de dados.
 
 import React, { useState, useEffect } from 'react'
@@ -299,7 +299,7 @@ function App() {
           </div>
           <div className="mt-24 text-center border-t pt-8 font-sans">
             <p className="font-bold text-xs uppercase underline">Assinado Digitalmente via SISMONI</p>
-            <p className="text-[10px] text-slate-500 mt-1">SISTEMA INTEGRADO DE MONITORAMENTO v1.1</p>
+            <p className="text-[10px] text-slate-500 mt-1">SISTEMA INTEGRADO DE MONITORAMENTO v1.2</p>
           </div>
         </div>
       </div>
@@ -389,7 +389,7 @@ function App() {
             <div className="mb-8 p-6 bg-yellow-50 border-l-[10px] border-yellow-400 rounded-r-3xl">
               <p className="text-lg font-black text-slate-800 uppercase leading-none">{vistoriaAberta.rua}</p>
             </div>
-            <textarea id="parecer" className="w-full p-6 border-2 border-slate-100 bg-slate-50 rounded-3xl h-44 mb-8 font-bold text-sm outline-none focus:border-blue-900 shadow-inner" placeholder="Relate as condições observadas para a SESAU..."></textarea>
+            <textarea id="parecer" className="w-full p-6 border-2 border-slate-100 bg-slate-50 rounded-3xl h-44 mb-8 font-bold text-sm outline-none focus:border-blue-900 shadow-inner" placeholder="Relate as condições observadas para a secretaria municipal..."></textarea>
             <div className="flex gap-4">
               <button onClick={() => finalizarVistoria(vistoriaAberta.id, document.getElementById('parecer').value)} className="flex-grow bg-blue-900 text-yellow-500 py-6 rounded-2xl font-black uppercase text-[11px] shadow-2xl">Finalizar e Gerar Ofício</button>
               <button onClick={() => setVistoriaAberta(null)} className="px-8 py-6 text-slate-300 font-black uppercase text-[11px]">Sair</button>
@@ -534,8 +534,8 @@ function App() {
       </main>
 
       <footer className="p-16 text-center border-t bg-white mt-12">
-        <p className="text-[13px] font-black text-blue-900 uppercase tracking-[0.4em] mb-2 italic">SISMONI v1.1 - CAMPO GRANDE - MATO GROSSO DO SUL</p>
-        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic underline decoration-blue-900">Módulo 3 - Manipulação de Dados SQLite • 2026</p>
+        <p className="text-[13px] font-black text-blue-900 uppercase tracking-[0.4em] mb-2 italic">SISMONI v1.2 - CAMPO GRANDE - MATO GROSSO DO SUL</p>
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic underline decoration-blue-900">Módulo 4 -  BASE PARA TESTES E GARANTIA DE QUALIDADE • 2026</p>
       </footer>
     </div>
   )

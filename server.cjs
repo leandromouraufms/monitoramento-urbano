@@ -44,9 +44,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 else {
                     console.log('Tabela "usuarios" pronta. Dados preservados!');
                     db.run(`INSERT OR IGNORE INTO usuarios (id_usuario, nome, cpf, senha, perfil) 
-                            VALUES (999, 'Cidadao Anonimo', '000.000.000-00', 'nao_se_aplica', 'Cidadao')`);
-                    db.run(`INSERT OR IGNORE INTO usuarios (id_usuario, nome, cpf, senha, perfil) 
-                            VALUES (1000, 'Leandro Fiscal', '123.456.789-00', '1234', 'Fiscal')`);
+                            VALUES (999, 'Cidadao Anonimo', '00000000000', 'nao_se_aplica', 'Cidadao')`);
                 }
             });
 
